@@ -16,6 +16,9 @@ using Warden.Common.RabbitMq;
 using Warden.Common.Security;
 using Nancy;
 using Warden.Common.Exceptionless;
+using Nancy.Conventions;
+using Warden.Services.Supervisor.Settings;
+using Warden.Services.Supervisor.Services;
 
 namespace Warden.Services.Supervisor.Framework
 {
@@ -36,13 +39,15 @@ namespace Warden.Services.Supervisor.Framework
             base.ConfigureApplicationContainer(container);
             container.Update(builder =>
             {
-                builder.RegisterInstance(_configuration.GetSettings<MongoDbSettings>());
+                builder.RegisterInstance(_configuration.GetSettings<MongoDbSettings>()).SingleInstance();
+                builder.RegisterInstance(_configuration.GetSettings<SupervisorSettings>()).SingleInstance();
                 builder.RegisterType<CustomJsonSerializer>().As<JsonSerializer>().SingleInstance();
                 builder.RegisterModule<MongoDbModule>();
                 builder.RegisterType<MongoDbInitializer>().As<IDatabaseInitializer>();
                 builder.RegisterType<Handler>().As<IHandler>();
                 builder.RegisterInstance(_configuration.GetSettings<ExceptionlessSettings>()).SingleInstance();
                 builder.RegisterType<ExceptionlessExceptionHandler>().As<IExceptionHandler>().SingleInstance();
+                builder.RegisterType<SupervisorService>().As<ISupervisorService>().SingleInstance();
                 
                 var assembly = typeof(Startup).GetTypeInfo().Assembly;
                 builder.RegisterAssemblyTypes(assembly).AsClosedTypesOf(typeof(IEventHandler<>));
@@ -52,6 +57,12 @@ namespace Warden.Services.Supervisor.Framework
                 RabbitMqContainer.Register(builder, _configuration.GetSettings<RawRabbitConfiguration>());
             });
             LifetimeScope = container;
+        }
+
+        protected override void ConfigureConventions(NancyConventions nancyConventions)
+        {
+            nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("static", "wwwroot/content"));
+            base.ConfigureConventions(nancyConventions);
         }
 
         protected override void RequestStartup(ILifetimeScope container, IPipelines pipelines, NancyContext context)

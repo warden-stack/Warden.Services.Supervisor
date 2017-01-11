@@ -2,7 +2,15 @@
     "title": "Warden.Services.Supervisor",
     "version": "1.0.0-*",
     "buildOptions": {
-        "emitEntryPoint": true
+        "emitEntryPoint": true,
+        "copyToOutput": {
+            "include": [
+                "web.config",
+                "nlog.config",
+                "appsettings.json",
+                "wwwroot"
+            ]
+        }
     },
     "dependencies": {
         "Warden.Common": "1.0.*",
@@ -43,7 +51,8 @@
         "include": [
             "web.config",
             "nlog.config",
-            "appsettings.json"
+            "appsettings.json",
+            "wwwroot"
         ]
     },
     "scripts": {
