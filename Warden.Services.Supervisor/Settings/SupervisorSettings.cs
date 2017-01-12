@@ -4,6 +4,7 @@ namespace Warden.Services.Supervisor.Settings
 {
     public class SupervisorSettings
     {
+        public string Url { get; set; }
         public IList<Service> Services { get; set; }
 
         public class Service 
